@@ -1,16 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/running_coach"
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+db = SQLAlchemy()
+
 
 class TrainingModel(db.Model):
     __tablename__ = 'training'
 
     id_training = db.Column(db.Integer, primary_key=True)
-    id_training_day = db.Column(db.Integer, foreign_key=True)
+    id_training_day = db.Column(db.Integer, db.ForeignKey('training_day.id_training_day'))
     training_type = db.Column(db.String(10))
     training_duration = db.Column(db.Integer)
     training_completed = db.Column(db.Boolean)
@@ -56,5 +53,5 @@ class Job(db.Model):
     job_duration = db.Column(db.Integer)
     success = db.Column(db.Boolean)
     status = db.Column(db.String(10))
-    created_at = db.Column(db.Timestamp)
-    updated_at = db.Column(db.Timestamp)
+    created_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
