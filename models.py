@@ -3,26 +3,23 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
-class TrainingModel(db.Model):
+class Training(db.Model):
     __tablename__ = 'training'
 
     id_training = db.Column(db.Integer, primary_key=True)
     id_training_day = db.Column(db.Integer, db.ForeignKey('training_day.id_training_day'))
     training_type = db.Column(db.String(10))
     training_duration = db.Column(db.Integer)
+    content = db.Column(db.Text, nullable=True)
     training_completed = db.Column(db.Boolean)
     feedback = db.Column(db.String(1000))
 
-class TrainingDayModel(db.Model):
+class TrainingDay(db.Model):
     __tablename__ = 'training_day'
 
     id_training_day = db.Column(db.Integer, primary_key=True)
     training_day_date = db.Column(db.Date)
-    nb_trainings = db.Column(db.Integer)
-    training_day_completed = db.Column(db.Boolean)
-    training_day_duration = db.Column(db.Integer)
-    content_running = db.Column(db.String())
-    content_strength = db.Column(db.String())
+    is_rest_day = db.Column(db.Boolean, nullable=False, default=True)
 
 class Milestone(db.Model):
     __tablename__ = 'milestone'
