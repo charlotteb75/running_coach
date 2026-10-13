@@ -24,3 +24,10 @@ def register_error_handlers(app):
         return {
             "error": "Resource not found"
         }, 404
+    
+    @app.errorhandler(409)
+    def handle_conflict(error):
+        return {
+            "error": "Request generates conflict with resource",
+            "message": error.description
+        }, 409
