@@ -1,8 +1,8 @@
-from flask import Flask, request
+from flask import Flask, abort, request
 from flask_migrate import Migrate
 from errors import register_error_handlers
 from models import Training, TrainingDay, db
-from schemas import TrainingCreate, TrainingDayCreate
+from schemas import TrainingCreate, TrainingDayCreate, TrainingDayUpdate, TrainingUpdate
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/running_coach"
@@ -32,13 +32,38 @@ def get_training_day(id_training_day):
     }
     return {"message": "success", "training_day": response}
 
-@app.post("/training_day/<int:id_training_day>")
+@app.post("/training_day")
 def create_training_day():
     training_day_data = TrainingDayCreate.model_validate(request.get_json())
     training_day_obj = TrainingDay(**training_day_data.model_dump())
     db.session.add(training_day_obj)
     db.session.commit()
-    return {"message": "success", "training_day": training_day_obj}
+    return {
+        "message": "success",
+        "training_day": {
+            "id_training_day": training_day_obj.id_training_day,
+            "training_day_date": training_day_obj.training_day_date.isoformat(),
+            "is_rest_day": training_day_obj.is_rest_day,
+        },
+    }, 201
+
+@app.patch("/training_day/<int:id_training_day>")
+def update_training_day(id_training_day):
+    data = TrainingDayUpdate.model_validate(request.get_json())
+    training_day = db.get_or_404(TrainingDay, id_training_day)
+    
+    if data.is_rest_day == True:
+        training_id = db.session.scalar(
+            db.select(Training.id_training)
+            .where(Training.id_training_day == id_training_day)
+            .limit(1)
+        )
+        if training_id is not None:
+            abort(409, description="This training day has trainings")
+
+    training_day.is_rest_day = data.is_rest_day
+    db.session.commit()
+    return {"message": "Training day updated"}, 200
 
 @app.get("/training/<int:id_training>")
 def get_training(id_training):
@@ -52,13 +77,46 @@ def get_training(id_training):
     }
     return {"message": "success", "training": response}
 
-@app.post("/training/<int:id_training>")
+@app.post("/training")
 def create_training():
     training_data = TrainingCreate.model_validate(request.get_json())
+    training_day = db.get_or_404(TrainingDay, training_data.id_training_day)
+    training_day.is_rest_day = False
     training_obj = Training(**training_data.model_dump())
     db.session.add(training_obj)
     db.session.commit()
-    return {"message": "success", "training_day": training_obj}
+    return {
+        "message": "success",
+        "training": {
+            "id_training": training_obj.id_training,
+            "id_training_day": training_obj.id_training_day,
+            "training_type": training_obj.training_type
+        },
+    }, 201
+
+@app.patch("/training/<int:id_training>")
+def update_training(id_training):
+    data = TrainingUpdate.model_validate(request.get_json())
+    training = db.get_or_404(Training, id_training)
+    
+    changes = data.model_dump(exclude_unset=True)
+
+    if changes.get("id_training_day") is not None:
+        target_training_day = db.get_or_404(TrainingDay, changes["id_training_day"])
+        target_training_day.is_rest_day = False
+
+    for field, value in changes.items():
+        setattr(training, field, value)
+
+    db.session.commit()
+    return {"message": "Training updated"}, 200
+
+@app.delete("/training/<int:id_training>")
+def delete_training(id_training):
+    training = db.get_or_404(Training, id_training)
+    db.session.delete(training)
+    db.session.commit()
+    return {"message": "Training deleted"}, 200
 
 
 
