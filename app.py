@@ -1,8 +1,8 @@
 from flask import Flask, abort, request
 from flask_migrate import Migrate
 from errors import register_error_handlers
-from models import Training, TrainingDay, db
-from schemas import TrainingCreate, TrainingDayCreate, TrainingDayUpdate, TrainingUpdate
+from models import Milestone, Training, TrainingDay, db
+from schemas import MilestoneCreate, MilestoneUpdate, TrainingCreate, TrainingDayCreate, TrainingDayUpdate, TrainingUpdate
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/running_coach"
@@ -118,7 +118,46 @@ def delete_training(id_training):
     db.session.commit()
     return {"message": "Training deleted"}, 200
 
+@app.get("/milestone/<int:id_milestone>")
+def get_milestone(id_milestone):
+    milestone = db.get_or_404(Milestone, id_milestone)
+    response = {
+        "milestone_type" : milestone.milestone_type,
+        "milestone_distance" : milestone.milestone_distance,
+        "milestone_speed": milestone.milestone_speed,
+        "date_estimated": milestone.date_estimated,
+        "achieved": milestone.achieved,
+        "date_achieved": milestone.date_achieved
+    }
+    return {"message": "success", "milestone": response}
 
+@app.post("/milestone")
+def create_milestone():
+    milestone_data = MilestoneCreate.model_validate(request.get_json())
+    milestone_obj = Milestone(**milestone_data.model_dump())
+    db.session.add(milestone_obj)
+    db.session.commit()
+    return {
+        "message": "success",
+        "milestone": {
+            "id_milestone": milestone_obj.id_milestone,
+            "milestone_type": milestone_obj.milestone_type,
+            "date_estimated": milestone_obj.date_estimated
+        },
+    }, 201
+
+@app.patch("/milestone/<int:id_milestone>")
+def update_milestone(id_milestone):
+    data = MilestoneUpdate.model_validate(request.get_json())
+    milestone = db.get_or_404(Milestone, id_milestone)
+    
+    changes = data.model_dump(exclude_unset=True)
+
+    for field, value in changes.items():
+        setattr(milestone, field, value)
+
+    db.session.commit()
+    return {"message": "Milestone updated"}, 200
 
 if __name__ == "__main__":
   app.run(debug=True)

@@ -25,8 +25,8 @@ class Milestone(db.Model):
     __tablename__ = 'milestone'
 
     id_milestone = db.Column(db.Integer, primary_key=True)
-    acheived = db.Column(db.Boolean)
-    date_acheived = db.Column(db.Date)
+    achieved = db.Column(db.Boolean)
+    date_achieved = db.Column(db.Date)
     date_estimated = db.Column(db.Date)
     milestone_distance = db.Column(db.Float)
     milestone_speed = db.Column(db.Float)
