@@ -30,8 +30,8 @@ def upgrade():
     )
     op.create_table('milestone',
     sa.Column('id_milestone', sa.Integer(), nullable=False),
-    sa.Column('acheived', sa.Boolean(), nullable=True),
-    sa.Column('date_acheived', sa.Date(), nullable=True),
+    sa.Column('achieved', sa.Boolean(), nullable=True),
+    sa.Column('date_achieved', sa.Date(), nullable=True),
     sa.Column('date_estimated', sa.Date(), nullable=True),
     sa.Column('milestone_distance', sa.Float(), nullable=True),
     sa.Column('milestone_speed', sa.Float(), nullable=True),
