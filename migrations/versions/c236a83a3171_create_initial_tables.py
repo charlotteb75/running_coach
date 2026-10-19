@@ -40,11 +40,11 @@ def upgrade():
     )
     op.create_table('running_history',
     sa.Column('id_run', sa.Integer(), nullable=False),
-    sa.Column('run_date', sa.Date(), nullable=True),
-    sa.Column('run_distance', sa.Float(), nullable=True),
-    sa.Column('run_time', sa.Float(), nullable=True),
-    sa.Column('run_speed', sa.Float(), nullable=True),
-    sa.Column('elevation', sa.Integer(), nullable=True),
+    sa.Column('run_date', sa.Date(), nullable=False),
+    sa.Column('run_distance', sa.Float(), nullable=False),
+    sa.Column('run_time', sa.Float(), nullable=False),
+    sa.Column('bpm', sa.Integer(), nullable=False),
+    sa.Column('elevation', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id_run')
     )
     op.create_table('training_day',
