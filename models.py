@@ -36,11 +36,11 @@ class RunningHistory(db.Model):
     __tablename__ = 'running_history'
 
     id_run = db.Column(db.Integer, primary_key=True)
-    run_date = db.Column(db.Date)
-    run_distance = db.Column(db.Float)
-    run_time = db.Column(db.Float)
-    run_speed = db.Column(db.Float)
-    elevation = db.Column(db.Integer)
+    run_date = db.Column(db.Date, nullable=False)
+    run_distance = db.Column(db.Float, nullable=False)
+    run_time = db.Column(db.Float, nullable=False)
+    bpm = db.Column(db.Integer, nullable=False)
+    elevation = db.Column(db.Integer, nullable=False)
 
 class Job(db.Model):
     __tablename__ = 'job'

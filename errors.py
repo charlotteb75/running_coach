@@ -31,3 +31,9 @@ def register_error_handlers(app):
             "error": "Request generates conflict with resource",
             "message": error.description
         }, 409
+    
+    @app.errorhandler(500)
+    def handle_internal_error(error):
+        return {
+            "error": "Internal server error"
+        }, 500
