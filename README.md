@@ -17,7 +17,8 @@ The app's tasks are monitored in a specific page (LLM requests and Garmin data r
 
 ## Database schema
 
-<img width="559" height="555" alt="Capture d’écran 2026-10-19 à 11 24 01" src="https://github.com/user-attachments/assets/2e988dd3-f134-42a2-a211-dafe02d92e16" />
+<img width="535" height="557" alt="Capture d’écran 2026-10-19 à 15 56 25" src="https://github.com/user-attachments/assets/ca81fd6e-e4bd-4457-bb7a-bfb06d26f483" />
+
 
 
 
