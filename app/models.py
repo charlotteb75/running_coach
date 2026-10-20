@@ -1,6 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from app.extensions import db
 
 
 class Training(db.Model):
@@ -48,7 +46,6 @@ class Job(db.Model):
     id_job = db.Column(db.Integer, primary_key=True)
     job_type = db.Column(db.String(10))
     job_duration = db.Column(db.Integer)
-    success = db.Column(db.Boolean)
     status = db.Column(db.String(10))
     created_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
