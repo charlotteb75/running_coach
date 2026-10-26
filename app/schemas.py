@@ -78,3 +78,7 @@ class MilestoneUpdate(BaseModel):
 
     achieved: bool = Field(strict=True)
     date_achieved: date
+
+class PaginationParams(BaseModel):
+    page: int = Field(default=1, ge=1)
+    per_page: int = Field(default=20, ge=1, le=100)
