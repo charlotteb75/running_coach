@@ -1,24 +1,23 @@
 
 
-from flask import Blueprint
+from flask import Blueprint, abort, request
 from sqlalchemy import case, func
 from app.models import Job
 from app.extensions import db
+from app.schemas import PaginationParams
 
 job_bp = Blueprint("job", __name__) 
 
 
-@job_bp.get("/job/all")
+@job_bp.get("/jobs")
 def get_jobs():
+    pagination = PaginationParams.model_validate(
+        request.args.to_dict()
+    )
+
     query_jobs = (
-        db.select(
-            Job.job_type,
-            Job.job_duration,
-            Job.status,
-            Job.created_at,
-            Job.updated_at
-        )
-        .order_by(Job.created_at)
+        db.select(Job)
+        .order_by(Job.created_at.desc())
     )
 
     query_stats = (
@@ -38,7 +37,13 @@ def get_jobs():
         .group_by(Job.job_type)
     )
 
-    jobs = db.session.execute(query_jobs).all()
+    jobs_page = db.paginate(
+        query_jobs,
+        page=pagination.page,
+        per_page=pagination.per_page,
+        max_per_page=100,
+        error_out=False
+    )
     job_stats = db.session.execute(query_stats).all()
     
     return {
@@ -49,8 +54,15 @@ def get_jobs():
                 "status": row.status,
                 "job_duration": row.job_duration
             }
-            for row in jobs
+            for row in jobs_page.items
         ],
+        "pagination": {
+            "page": jobs_page.page,
+            "per_page": jobs_page.per_page,
+            "total": jobs_page.total,
+            "pages": jobs_page.pages,
+            "has_next": jobs_page.has_next,
+        },
         "stats": [
             {
                 "job_type": row.job_type,

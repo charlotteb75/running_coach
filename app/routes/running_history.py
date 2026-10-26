@@ -1,16 +1,16 @@
-
-
-
 from flask import Blueprint
 from sqlalchemy import Date, cast, func
 from app.models import RunningHistory
 from app.extensions import db
+from app.utils.date_ranges import get_running_stats_window
 
 running_history_bp = Blueprint("running_history", __name__)
 
 
 @running_history_bp.get("/running_history/distance")
 def get_distance_history():
+    start_date, end_date = get_running_stats_window()
+    
     week_start = cast(
         func.date_trunc("week", RunningHistory.run_date),
         Date,
@@ -20,6 +20,10 @@ def get_distance_history():
         db.select(
             week_start,
             func.sum(RunningHistory.run_distance).label("distance"),
+        )
+        .where(
+            RunningHistory.run_date >= start_date,
+            RunningHistory.run_date < end_date,
         )
         .group_by(week_start)
         .order_by(week_start)
@@ -39,6 +43,8 @@ def get_distance_history():
 
 @running_history_bp.get("/running_history/pace")
 def get_pace_history():
+    start_date, end_date = get_running_stats_window()
+
     week_start = cast(
         func.date_trunc("week", RunningHistory.run_date),
         Date,
@@ -50,6 +56,10 @@ def get_pace_history():
             (
                 func.sum(RunningHistory.run_time) / func.nullif(func.sum(RunningHistory.run_distance), 0)
             ).label("avg_pace"),
+        )
+        .where(
+            RunningHistory.run_date >= start_date,
+            RunningHistory.run_date < end_date,
         )
         .group_by(week_start)
         .order_by(week_start)
@@ -71,6 +81,8 @@ def get_pace_history():
 
 @running_history_bp.get("/running_history/bpm")
 def get_bpm_history():
+    start_date, end_date = get_running_stats_window()
+
     week_start = cast(
         func.date_trunc("week", RunningHistory.run_date),
         Date,
@@ -82,6 +94,10 @@ def get_bpm_history():
             (
                 func.sum(RunningHistory.bpm*RunningHistory.run_time) / func.nullif(func.sum(RunningHistory.run_time), 0)
             ).label("avg_bpm"),
+        )
+        .where(
+            RunningHistory.run_date >= start_date,
+            RunningHistory.run_date < end_date,
         )
         .group_by(week_start)
         .order_by(week_start)
