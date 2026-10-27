@@ -1,6 +1,6 @@
 
 
-from flask import Blueprint, abort, request
+from flask import Blueprint, request
 from sqlalchemy import case, func
 from app.models import Job
 from app.extensions import db

@@ -51,7 +51,7 @@ class MilestoneCreate(BaseModel):
     date_estimated: date
     milestone_distance: float | None = Field(gt=0, default=None, strict=True)
     milestone_speed: float | None = Field(gt=0, default=None, strict=True)
-    milestone_type: Literal["distance", "speed", "speed on distance"]
+    milestone_type: Literal["distance", "pace", "pace on distance"]
 
     @model_validator(mode="after")
     def require_speed_or_distance(self) -> Self:
