@@ -1,36 +1,27 @@
+Génère ou adapte le planning à partir de la target_date fournie dans les données.
+Base-toi sur les objectifs en cours, les milestones récemment atteintes, les séances récentes, les résultats de course et les feedbacks.
 
-S'il n'y a aucun training en base de données, génère l'ensemble du planning d'entrainement en fonction du context, si un planning d'entrainement existe (trainings en base), adapte le au besoin et modifie seulement les futurs trainings (a partir de la target_date) qui ont besoin d'être modifiés en fonction des données récentes et des objectifs en cours : 
-- Base-toi sur l'historique actuel, les dernières séances, les objectifs en cours et les eventuels feedbacks envoyés par l'utilisateur : a toi de décider en tant que coach, si les prochains trainings doivent être adaptés ou si les données récentes montrent que le planning d'entrainement n'a pas besoin d'être modifié par rapport aux milestones en cours. 
-- Si c'est un jour de repos, la liste des trainings sera vide
-- Le programme d'entrainement doit suivre le format suivant : 
-{
-    "updated_training_days": [
-        "training_day_date": date du jour de l'entrainement,
-        "trainings": [
-            {
-            "id_training": id du training,
-            "training_type": running ou strength,
-            "title": titre de la session,
-            "training_duration": durée en minutes,
-            "training_distance": si training_type = running,
-            "description": description de l'entrainement, en fonction de si running on strength
-            },
-            {
-            "training_type": running ou strength,
-            "title": titre de la session,
-            "training_duration": durée en minutes,
-            "training_distance": si training_type = running,
-            "description": description de l'entrainement, en fonction de si running on strength
-            }
-        ]
-    ],
-    "updated_milestones": [
-        "id_milestone": id de la milestone,
-        "date_estimated": date estimée de complétion,
-        "milestone_type": vitesse, distance ou les deux,
-        "milestone_distance": distance à faire si milestone_type = distance,
-        "milestone_speed": vitesse à atteindre si milestone_type = pace
-    ]
+S'il existe un planning, retourne uniquement les journées et milestones nécessitant des changements. Sinon, propose un planning en fonction des objectifs. Ne modifie jamais de journée antérieure à target_date ni de séance déjà terminée.
 
-}
-- Il ne peut y avoir qu'un seul training de chaque type par jour maximum
+Réponds uniquement avec un objet JSON contenant :
+- updated_training_days : une liste d'objets avec training_day_date (YYYY-MM-DD) et trainings (liste).
+- updated_milestones : une liste d'objets décrivant les modifications d'objectifs existants.
+
+Chaque training contient :
+- id_training : l'identifiant fourni dans le contexte pour modifier une séance existante ; null pour créer une séance. N'invente jamais d'identifiant.
+- training_type : "running" ou "strength".
+- title : titre non vide.
+- training_duration : entier strictement positif, en minutes.
+- training_distance : nombre strictement positif en km pour running ; null pour strength.
+- description : description non vide de la séance.
+
+Les entraînements et journées omis sont conservés. La liste trainings décrit uniquement les créations et modifications, pas un remplacement complet de la journée. Une liste vide crée un jour de repos si aucune séance n'existe pour cette date ; elle ne supprime jamais les séances déjà présentes. Pour modifier une séance, utilise son id_training plutôt que d'en recréer une. Il ne peut y avoir qu'une séance de chaque type par jour, en comptant les séances existantes conservées. Ne change pas l'identifiant, la date d'association, le statut de réalisation ni le feedback d'une séance.
+
+Chaque milestone modifiée contient :
+- id_milestone : identifiant d'un objectif en cours fourni dans le contexte.
+- date_estimated : date estimée YYYY-MM-DD, à partir de target_date.
+- milestone_type : "distance", "pace" ou "pace on distance".
+- milestone_distance : distance positive en km pour distance et pace on distance, sinon null.
+- milestone_speed : allure positive en minutes/km pour pace et pace on distance, sinon null.
+
+Ne modifie pas les milestones atteintes et ne crée pas de milestone dans cette réponse. Retourne une liste vide pour chaque catégorie ne nécessitant aucun changement. Le schéma JSON joint précise les champs autorisés.

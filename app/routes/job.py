@@ -4,7 +4,7 @@ from flask import Blueprint, request
 from sqlalchemy import case, func
 from app.models import Job
 from app.extensions import db
-from app.schemas import PaginationParams
+from app.schemas.schemas import PaginationParams
 
 job_bp = Blueprint("job", __name__) 
 

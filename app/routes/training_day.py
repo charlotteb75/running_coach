@@ -3,7 +3,7 @@
 from flask import Blueprint, abort, request
 from app.extensions import db
 from app.models import Training, TrainingDay
-from app.schemas import TrainingDayCreate, TrainingDayUpdate
+from app.schemas.schemas import TrainingDayCreate, TrainingDayUpdate
 
 
 training_day_bp = Blueprint("training_day", __name__)

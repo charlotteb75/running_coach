@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from app.services.openrouter import generate_training_plan
 from app.models import Milestone, RunningHistory, Training, TrainingDay
 from app.extensions import db
+from app.jobs.save_training_plan import save_training_plan
 
 
 def _serialize_rows(statement):
@@ -55,8 +56,9 @@ def build_training_context(target_date):
     }
 
 
-def generate_training_job():
-    target_date = date.today() + timedelta(days=1)
+def generate_training_job(target_date=None):
+    target_date = target_date or date.today() + timedelta(days=1)
     context = build_training_context(target_date)
     plan = generate_training_plan(context)
+    save_training_plan(plan, target_date)
     return plan
