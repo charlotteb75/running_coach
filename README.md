@@ -21,5 +21,14 @@ The app's tasks are monitored in a specific page (LLM requests and Garmin data r
 
 
 
+## Tests
 
+Install development dependencies and run the test suite:
 
+```bash
+uv sync --group dev
+uv run pytest
+```
+
+Tests use an isolated in-memory SQLite database and a mocked OpenRouter client.
+Shared fixtures live in `tests/conftest.py`.
