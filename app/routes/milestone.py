@@ -3,7 +3,7 @@
 from flask import Blueprint, request
 from app.extensions import db
 from app.models import Milestone
-from app.schemas.schemas import MilestoneCreate, MilestoneUpdate
+from app.schemas.database_schemas import MilestoneCreate, MilestoneUpdate
 
 milestone_bp = Blueprint("milestone", __name__)
 

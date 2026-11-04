@@ -1,6 +1,6 @@
 """Public request schemas, preserved after moving schemas into a package."""
 
-from .schemas import (
+from .database_schemas import (
     MilestoneCreate,
     MilestoneUpdate,
     PaginationParams,

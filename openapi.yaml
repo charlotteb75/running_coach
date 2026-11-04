@@ -1,0 +1,1016 @@
+openapi: "3.1.0"
+info:
+  title: "Running Coach API"
+  version: "1.0.0"
+  description: "API personnelle de suivi des entraînements. Description du comportement actuel des routes ; les schémas d’entrée reprennent les modèles Pydantic."
+servers:
+  -
+    url: "/"
+    description: "Serveur servant cette documentation"
+tags:
+  -
+    name: "Entraînements"
+  -
+    name: "Journées"
+  -
+    name: "Objectifs"
+  -
+    name: "Statistiques de course"
+  -
+    name: "Jobs"
+  -
+    name: "Documentation"
+paths:
+  /training/{id_training}:
+    parameters:
+      -
+        name: "id_training"
+        in: "path"
+        required: true
+        description: "Identifiant de la ressource."
+        schema:
+          type: "integer"
+          minimum: 0
+    get:
+      tags:
+        - "Entraînements"
+      summary: "Récupérer un entraînement"
+      operationId: "getTraining"
+      responses:
+        "200":
+          description: "Récupérer un entraînement."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                  training:
+                    "$ref": "#/components/schemas/Training"
+                required:
+                  - "message"
+                  - "training"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+    patch:
+      tags:
+        - "Entraînements"
+      summary: "Modifier un entraînement"
+      operationId: "updateTraining"
+      description: "Au moins un champ est requis. Seuls les champs envoyés sont modifiés. Si id_training_day est non null, la journée cible doit exister et passe à is_rest_day=false. Le schéma PATCH autorise actuellement une chaîne libre pour training_type et des valeurs nulles ; les contraintes en base peuvent ensuite rejeter certaines valeurs."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/TrainingUpdate"
+      responses:
+        "200":
+          description: "Modifier un entraînement."
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Message"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "415":
+          "$ref": "#/components/responses/Error415"
+        "422":
+          "$ref": "#/components/responses/Error422"
+    delete:
+      tags:
+        - "Entraînements"
+      summary: "Supprimer un entraînement"
+      operationId: "deleteTraining"
+      description: "La suppression ne recalcule pas is_rest_day de la journée associée."
+      responses:
+        "200":
+          description: "Supprimer un entraînement."
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Message"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+  /training:
+    post:
+      tags:
+        - "Entraînements"
+      summary: "Créer un entraînement"
+      operationId: "createTraining"
+      description: "La journée associée doit exister ; son is_rest_day passe à false."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/TrainingCreate"
+      responses:
+        "201":
+          description: "Créer un entraînement."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                  training:
+                    "$ref": "#/components/schemas/TrainingCreated"
+                required:
+                  - "message"
+                  - "training"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "415":
+          "$ref": "#/components/responses/Error415"
+        "422":
+          "$ref": "#/components/responses/Error422"
+  /training_day/{id_training_day}:
+    parameters:
+      -
+        name: "id_training_day"
+        in: "path"
+        required: true
+        description: "Identifiant de la ressource."
+        schema:
+          type: "integer"
+          minimum: 0
+    get:
+      tags:
+        - "Journées"
+      summary: "Récupérer le bilan d’une journée"
+      operationId: "getTrainingDay"
+      description: "La réponse contient le statut de repos, la durée totale et le statut de complétion calculés. Elle ne contient ni la date ni la liste des séances."
+      responses:
+        "200":
+          description: "Récupérer le bilan d’une journée."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                  training_day:
+                    "$ref": "#/components/schemas/TrainingDay"
+                required:
+                  - "message"
+                  - "training_day"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+    patch:
+      tags:
+        - "Journées"
+      summary: "Modifier le statut de repos"
+      operationId: "updateTrainingDay"
+      description: "Seul is_rest_day peut être modifié. true est refusé si des entraînements sont associés. false est autorisé même sans entraînement."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/TrainingDayUpdate"
+      responses:
+        "200":
+          description: "Modifier le statut de repos."
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Message"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "415":
+          "$ref": "#/components/responses/Error415"
+        "422":
+          "$ref": "#/components/responses/Error422"
+  /training_day:
+    post:
+      tags:
+        - "Journées"
+      summary: "Créer une journée"
+      operationId: "createTrainingDay"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/TrainingDayCreate"
+      responses:
+        "201":
+          description: "Créer une journée."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                  training_day:
+                    "$ref": "#/components/schemas/TrainingDayCreated"
+                required:
+                  - "message"
+                  - "training_day"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "415":
+          "$ref": "#/components/responses/Error415"
+        "422":
+          "$ref": "#/components/responses/Error422"
+  /milestone/{id_milestone}:
+    parameters:
+      -
+        name: "id_milestone"
+        in: "path"
+        required: true
+        description: "Identifiant de la ressource."
+        schema:
+          type: "integer"
+          minimum: 0
+    get:
+      tags:
+        - "Objectifs"
+      summary: "Récupérer un objectif"
+      operationId: "getMilestone"
+      responses:
+        "200":
+          description: "Récupérer un objectif."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                  milestone:
+                    "$ref": "#/components/schemas/Milestone"
+                required:
+                  - "message"
+                  - "milestone"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+    patch:
+      tags:
+        - "Objectifs"
+      summary: "Mettre à jour la réalisation d’un objectif"
+      operationId: "updateMilestone"
+      description: "Les deux champs achieved et date_achieved sont obligatoires, y compris lorsque achieved vaut false."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MilestoneUpdate"
+      responses:
+        "200":
+          description: "Mettre à jour la réalisation d’un objectif."
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Message"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "415":
+          "$ref": "#/components/responses/Error415"
+        "422":
+          "$ref": "#/components/responses/Error422"
+  /milestone:
+    post:
+      tags:
+        - "Objectifs"
+      summary: "Créer un objectif"
+      operationId: "createMilestone"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MilestoneCreate"
+      responses:
+        "201":
+          description: "Créer un objectif."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                  milestone:
+                    "$ref": "#/components/schemas/MilestoneCreated"
+                required:
+                  - "message"
+                  - "milestone"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "415":
+          "$ref": "#/components/responses/Error415"
+        "422":
+          "$ref": "#/components/responses/Error422"
+  /running_history/distance:
+    get:
+      tags:
+        - "Statistiques de course"
+      summary: "Récupérer les distances hebdomadaires"
+      operationId: "getDistanceHistory"
+      description: "Fenêtre fixe : semaine actuelle et onze semaines précédentes, jusqu’à aujourd’hui inclus (date du serveur). Semaines débutant le lundi, triées par date croissante. Les semaines sans course sont omises. Aucun paramètre de période ou de pagination n’est pris en charge. Somme des distances, en kilomètres."
+      responses:
+        "200":
+          description: "Récupérer les distances hebdomadaires."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  weeks:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        week_start:
+                          type: "string"
+                          format: "date"
+                        distance:
+                          type: "number"
+                          description: "Somme des distances, en kilomètres."
+                      required:
+                        - "week_start"
+                        - "distance"
+                required:
+                  - "weeks"
+        "500":
+          "$ref": "#/components/responses/Error500"
+  /running_history/pace:
+    get:
+      tags:
+        - "Statistiques de course"
+      summary: "Récupérer les allures hebdomadaires"
+      operationId: "getPaceHistory"
+      description: "Fenêtre fixe : semaine actuelle et onze semaines précédentes, jusqu’à aujourd’hui inclus (date du serveur). Semaines débutant le lundi, triées par date croissante. Les semaines sans course sont omises. Aucun paramètre de période ou de pagination n’est pris en charge. Durée totale divisée par distance totale, en minutes/km, arrondie à deux décimales. null si la distance totale est nulle."
+      responses:
+        "200":
+          description: "Récupérer les allures hebdomadaires."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  weeks:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        week_start:
+                          type: "string"
+                          format: "date"
+                        avg_pace:
+                          type:
+                            - "number"
+                            - "null"
+                          description: "Durée totale divisée par distance totale, en minutes/km, arrondie à deux décimales. null si la distance totale est nulle."
+                      required:
+                        - "week_start"
+                        - "avg_pace"
+                required:
+                  - "weeks"
+        "500":
+          "$ref": "#/components/responses/Error500"
+  /running_history/bpm:
+    get:
+      tags:
+        - "Statistiques de course"
+      summary: "Récupérer les fréquences cardiaques hebdomadaires"
+      operationId: "getBpmHistory"
+      description: "Fenêtre fixe : semaine actuelle et onze semaines précédentes, jusqu’à aujourd’hui inclus (date du serveur). Semaines débutant le lundi, triées par date croissante. Les semaines sans course sont omises. Aucun paramètre de période ou de pagination n’est pris en charge. Moyenne des BPM pondérée par la durée des courses, arrondie à l’entier. null si la durée totale est nulle."
+      responses:
+        "200":
+          description: "Récupérer les fréquences cardiaques hebdomadaires."
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  weeks:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        week_start:
+                          type: "string"
+                          format: "date"
+                        avg_bpm:
+                          type:
+                            - "integer"
+                            - "null"
+                          description: "Moyenne des BPM pondérée par la durée des courses, arrondie à l’entier. null si la durée totale est nulle."
+                      required:
+                        - "week_start"
+                        - "avg_bpm"
+                required:
+                  - "weeks"
+        "500":
+          "$ref": "#/components/responses/Error500"
+  /jobs:
+    get:
+      tags:
+        - "Jobs"
+      summary: "Récupérer les exécutions des jobs"
+      operationId: "getJobs"
+      description: "Jobs triés du plus récent au plus ancien. Une page hors résultats retourne jobs=[]. Les statistiques par type portent sur tous les jobs succeeded ou failed, indépendamment de la pagination."
+      responses:
+        "200":
+          description: "Récupérer les exécutions des jobs."
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/JobsResponse"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "422":
+          "$ref": "#/components/responses/Error422"
+      parameters:
+        -
+          name: "page"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+            minimum: 1
+            default: 1
+        -
+          name: "per_page"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 100
+            default: 20
+  /docs:
+    get:
+      tags:
+        - "Documentation"
+      operationId: "getDocs"
+      summary: "Afficher Swagger UI"
+      responses:
+        "200":
+          description: "Afficher Swagger UI."
+          content:
+            text/html:
+              schema:
+                type: "string"
+        "500":
+          "$ref": "#/components/responses/Error500"
+  /openapi.yaml:
+    get:
+      tags:
+        - "Documentation"
+      operationId: "getOpenapi"
+      summary: "Télécharger la description OpenAPI"
+      responses:
+        "200":
+          description: "Télécharger la description OpenAPI."
+          content:
+            application/yaml:
+              schema:
+                type: "string"
+        "500":
+          "$ref": "#/components/responses/Error500"
+        "404":
+          "$ref": "#/components/responses/Error404"
+components:
+  schemas:
+    TrainingDayCreate:
+      additionalProperties: false
+      properties:
+        training_day_date:
+          format: "date"
+          title: "Training Day Date"
+          type: "string"
+        is_rest_day:
+          default: true
+          title: "Is Rest Day"
+          type: "boolean"
+      required:
+        - "training_day_date"
+      title: "TrainingDayCreate"
+      type: "object"
+    TrainingDayUpdate:
+      additionalProperties: false
+      properties:
+        is_rest_day:
+          anyOf:
+            -
+              type: "boolean"
+            -
+              type: "null"
+          title: "Is Rest Day"
+      required:
+        - "is_rest_day"
+      title: "TrainingDayUpdate"
+      type: "object"
+      description: "is_rest_day est obligatoire. Le schéma actuel accepte null, mais la colonne en base est non nullable : null peut provoquer une erreur 500."
+    TrainingCreate:
+      additionalProperties: false
+      properties:
+        id_training_day:
+          minimum: 0
+          title: "Id Training Day"
+          type: "integer"
+        training_type:
+          enum:
+            - "running"
+            - "strength"
+          title: "Training Type"
+          type: "string"
+        training_duration:
+          exclusiveMinimum: 0
+          title: "Training Duration"
+          type: "integer"
+          description: "Durée en minutes."
+        training_completed:
+          default: false
+          title: "Training Completed"
+          type: "boolean"
+        content:
+          anyOf:
+            -
+              minLength: 10
+              type: "string"
+            -
+              type: "null"
+          title: "Content"
+        feedback:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          default: null
+          title: "Feedback"
+      required:
+        - "id_training_day"
+        - "training_type"
+        - "training_duration"
+        - "content"
+      title: "TrainingCreate"
+      type: "object"
+    TrainingUpdate:
+      additionalProperties: false
+      properties:
+        id_training_day:
+          anyOf:
+            -
+              type: "integer"
+            -
+              type: "null"
+          default: null
+          title: "Id Training Day"
+        training_type:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          default: null
+          title: "Training Type"
+        training_duration:
+          anyOf:
+            -
+              exclusiveMinimum: 0
+              type: "integer"
+            -
+              type: "null"
+          default: null
+          title: "Training Duration"
+        content:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          default: null
+          title: "Content"
+        training_completed:
+          anyOf:
+            -
+              type: "boolean"
+            -
+              type: "null"
+          default: null
+          title: "Training Completed"
+        feedback:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          default: null
+          title: "Feedback"
+      title: "TrainingUpdate"
+      type: "object"
+      minProperties: 1
+    MilestoneCreate:
+      additionalProperties: false
+      properties:
+        achieved:
+          default: false
+          title: "Achieved"
+          type: "boolean"
+        date_achieved:
+          anyOf:
+            -
+              format: "date"
+              type: "string"
+            -
+              type: "null"
+          default: null
+          title: "Date Achieved"
+        date_estimated:
+          format: "date"
+          title: "Date Estimated"
+          type: "string"
+        milestone_distance:
+          anyOf:
+            -
+              exclusiveMinimum: 0
+              type: "number"
+            -
+              type: "null"
+          default: null
+          title: "Milestone Distance"
+        milestone_speed:
+          anyOf:
+            -
+              exclusiveMinimum: 0
+              type: "number"
+            -
+              type: "null"
+          default: null
+          title: "Milestone Speed"
+          description: "Allure cible en minutes par kilomètre."
+        milestone_type:
+          enum:
+            - "distance"
+            - "pace"
+            - "pace on distance"
+          title: "Milestone Type"
+          type: "string"
+      required:
+        - "date_estimated"
+        - "milestone_type"
+      title: "MilestoneCreate"
+      type: "object"
+      description: "Pour distance, milestone_distance est obligatoire et milestone_speed doit être null. Les branches du validateur pour speed et speed on distance ne correspondent actuellement pas aux valeurs pace et pace on distance : ces contraintes croisées ne sont donc pas appliquées à ces deux types."
+    MilestoneUpdate:
+      additionalProperties: false
+      properties:
+        achieved:
+          title: "Achieved"
+          type: "boolean"
+        date_achieved:
+          format: "date"
+          title: "Date Achieved"
+          type: "string"
+      required:
+        - "achieved"
+        - "date_achieved"
+      title: "MilestoneUpdate"
+      type: "object"
+    Error:
+      type: "object"
+      properties:
+        error:
+          type: "string"
+      required:
+        - "error"
+    ConflictError:
+      type: "object"
+      properties:
+        error:
+          type: "string"
+        message:
+          type: "string"
+      required:
+        - "error"
+        - "message"
+    ValidationError:
+      type: "object"
+      properties:
+        error:
+          type: "string"
+        details:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              field:
+                type: "string"
+              message:
+                type: "string"
+            required:
+              - "field"
+              - "message"
+      required:
+        - "error"
+        - "details"
+    Message:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+      required:
+        - "message"
+    Training:
+      type: "object"
+      properties:
+        training_type:
+          type:
+            - "string"
+            - "null"
+        training_duration:
+          type:
+            - "integer"
+            - "null"
+          description: "Durée en minutes."
+        content:
+          type:
+            - "string"
+            - "null"
+        training_completed:
+          type:
+            - "boolean"
+            - "null"
+        feedback:
+          type:
+            - "string"
+            - "null"
+      required:
+        - "training_type"
+        - "training_duration"
+        - "content"
+        - "training_completed"
+        - "feedback"
+    TrainingCreated:
+      type: "object"
+      properties:
+        id_training:
+          type: "integer"
+        id_training_day:
+          type: "integer"
+        training_type:
+          type: "string"
+          enum:
+            - "running"
+            - "strength"
+      required:
+        - "id_training"
+        - "id_training_day"
+        - "training_type"
+    TrainingDay:
+      type: "object"
+      properties:
+        is_rest_day:
+          type: "boolean"
+        training_day_duration:
+          type: "integer"
+          description: "Somme des durées en minutes, ou 0 sans séance."
+        training_day_completed:
+          type: "boolean"
+          description: "Vrai si au moins une séance existe et si toutes sont terminées. Faux sans séance."
+      required:
+        - "is_rest_day"
+        - "training_day_duration"
+        - "training_day_completed"
+    TrainingDayCreated:
+      type: "object"
+      properties:
+        id_training_day:
+          type: "integer"
+        training_day_date:
+          type: "string"
+          format: "date"
+        is_rest_day:
+          type: "boolean"
+      required:
+        - "id_training_day"
+        - "training_day_date"
+        - "is_rest_day"
+    Milestone:
+      type: "object"
+      properties:
+        milestone_type:
+          type:
+            - "string"
+            - "null"
+        milestone_distance:
+          type:
+            - "number"
+            - "null"
+        milestone_speed:
+          type:
+            - "number"
+            - "null"
+          description: "Allure en minutes/km."
+        date_estimated:
+          type:
+            - "string"
+            - "null"
+          description: "Date sérialisée par Flask au format HTTP, et non ISO 8601."
+          examples:
+            - "Tue, 03 Nov 2026 00:00:00 GMT"
+        achieved:
+          type:
+            - "boolean"
+            - "null"
+        date_achieved:
+          type:
+            - "string"
+            - "null"
+          description: "Date sérialisée par Flask au format HTTP, et non ISO 8601."
+          examples:
+            - "Tue, 03 Nov 2026 00:00:00 GMT"
+      required:
+        - "milestone_type"
+        - "milestone_distance"
+        - "milestone_speed"
+        - "date_estimated"
+        - "achieved"
+        - "date_achieved"
+    MilestoneCreated:
+      type: "object"
+      properties:
+        id_milestone:
+          type: "integer"
+        milestone_type:
+          type: "string"
+        date_estimated:
+          type:
+            - "string"
+            - "null"
+          description: "Date sérialisée par Flask au format HTTP, et non ISO 8601."
+          examples:
+            - "Tue, 03 Nov 2026 00:00:00 GMT"
+      required:
+        - "id_milestone"
+        - "milestone_type"
+        - "date_estimated"
+    Job:
+      type: "object"
+      properties:
+        job_type:
+          type:
+            - "string"
+            - "null"
+        created_at:
+          type:
+            - "string"
+            - "null"
+          description: "Date sérialisée par Flask au format HTTP, et non ISO 8601."
+          examples:
+            - "Tue, 03 Nov 2026 00:00:00 GMT"
+        status:
+          type:
+            - "string"
+            - "null"
+        job_duration:
+          type:
+            - "integer"
+            - "null"
+      required:
+        - "job_type"
+        - "created_at"
+        - "status"
+        - "job_duration"
+    Pagination:
+      type: "object"
+      properties:
+        page:
+          type: "integer"
+          minimum: 1
+        per_page:
+          type: "integer"
+          minimum: 1
+          maximum: 100
+        total:
+          type: "integer"
+          minimum: 0
+        pages:
+          type: "integer"
+          minimum: 0
+        has_next:
+          type: "boolean"
+      required:
+        - "page"
+        - "per_page"
+        - "total"
+        - "pages"
+        - "has_next"
+    JobStats:
+      type: "object"
+      properties:
+        job_type:
+          type:
+            - "string"
+            - "null"
+        success_rate:
+          type: "string"
+          description: "Pourcentage de succès. AVG sur entiers produit un Decimal PostgreSQL, sérialisé en chaîne par Flask."
+          examples:
+            - "75.0000000000000000"
+        avg_duration:
+          type:
+            - "string"
+            - "null"
+          description: "Moyenne des durées des jobs terminés, Decimal sérialisé en chaîne ; null si aucune durée connue."
+      required:
+        - "job_type"
+        - "success_rate"
+        - "avg_duration"
+    JobsResponse:
+      type: "object"
+      properties:
+        jobs:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/Job"
+        pagination:
+          "$ref": "#/components/schemas/Pagination"
+        stats:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/JobStats"
+      required:
+        - "jobs"
+        - "pagination"
+        - "stats"
+  responses:
+    Error404:
+      description: "Ressource introuvable."
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+    Error409:
+      description: "La journée contient des entraînements et ne peut pas devenir un jour de repos."
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/ConflictError"
+    Error422:
+      description: "Données invalides selon le schéma de validation."
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/ValidationError"
+    Error500:
+      description: "Erreur interne du serveur, notamment en cas d’échec en base."
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+    Error400:
+      description: "Corps JSON mal formé."
+      content:
+        text/html:
+          schema:
+            type: "string"
+            description: "Page d’erreur Flask par défaut."
+    Error415:
+      description: "Content-Type absent ou différent de application/json."
+      content:
+        text/html:
+          schema:
+            type: "string"
+            description: "Page d’erreur Flask par défaut."

@@ -5,6 +5,7 @@ from app.routes.training_day import training_day_bp
 from app.routes.milestone import milestone_bp
 from app.routes.running_history import running_history_bp
 from app.routes.job import job_bp
+from app.routes.docs import docs_bp
 from app.errors import register_error_handlers
 
 
@@ -19,5 +20,6 @@ def create_app():
     app.register_blueprint(milestone_bp)
     app.register_blueprint(running_history_bp)
     app.register_blueprint(job_bp)
+    app.register_blueprint(docs_bp)
     return app
 
