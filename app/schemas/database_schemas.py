@@ -82,3 +82,12 @@ class MilestoneUpdate(BaseModel):
 class PaginationParams(BaseModel):
     page: int = Field(default=1, ge=1)
     per_page: int = Field(default=20, ge=1, le=100)
+
+class RunningHistoryImport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_date: date
+    run_distance: float = Field(gt=0, allow_inf_nan=False)
+    run_time: float = Field(gt=0, allow_inf_nan=False)
+    bpm: int = Field(gt=0, strict=True)
+    elevation: int = Field(ge=0, strict=True)
