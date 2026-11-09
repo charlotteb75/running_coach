@@ -19,7 +19,7 @@ def get_distance_history():
     query = (
         db.select(
             week_start,
-            func.sum(RunningHistory.run_distance).label("distance"),
+            (func.sum(RunningHistory.run_distance) / 1000.0).label("distance"),
         )
         .where(
             RunningHistory.run_date >= start_date,
@@ -54,7 +54,8 @@ def get_pace_history():
         db.select(
             week_start,
             (
-                func.sum(RunningHistory.run_time) / func.nullif(func.sum(RunningHistory.run_distance), 0)
+                (func.sum(RunningHistory.run_time) / 60.0)
+                / func.nullif(func.sum(RunningHistory.run_distance) / 1000.0, 0)
             ).label("avg_pace"),
         )
         .where(

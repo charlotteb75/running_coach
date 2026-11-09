@@ -51,5 +51,3 @@ def fetch_activities(token, start_date, end_date):
 
         activities.extend(page)
         start += len(page)
-
-        return activities

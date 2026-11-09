@@ -34,9 +34,11 @@ class RunningHistory(db.Model):
     __tablename__ = 'running_history'
 
     id_run = db.Column(db.Integer, primary_key=True)
+    # Legacy rows have no Garmin identifier; new imports require one via Pydantic.
+    id_garmin_activity = db.Column(db.BigInteger, unique=True, nullable=True)
     run_date = db.Column(db.Date, nullable=False)
-    run_distance = db.Column(db.Float, nullable=False)
-    run_time = db.Column(db.Float, nullable=False)
+    run_distance = db.Column(db.Float, nullable=False)  # Garmin: metres
+    run_time = db.Column(db.Float, nullable=False)  # Garmin: seconds
     bpm = db.Column(db.Integer, nullable=False)
     elevation = db.Column(db.Integer, nullable=False)
 

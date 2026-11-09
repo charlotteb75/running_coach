@@ -86,8 +86,9 @@ class PaginationParams(BaseModel):
 class RunningHistoryImport(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    id_garmin_activity: int = Field(gt=0, strict=True)
     run_date: date
     run_distance: float = Field(gt=0, allow_inf_nan=False)
     run_time: float = Field(gt=0, allow_inf_nan=False)
     bpm: int = Field(gt=0, strict=True)
-    elevation: int = Field(ge=0, strict=True)
+    elevation: float = Field(ge=0, strict=True)
